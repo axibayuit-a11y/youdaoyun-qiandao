@@ -127,12 +127,10 @@ async Task<string> GetCookie(User user)
 
     // 使用 CDP 直接导航，避免 PuppeteerSharp 默认的 referrerPolicy 问题
     var cdpSession = await page.Target.CreateCDPSessionAsync();
-    await cdpSession.SendAsync("Page.navigate", new { url = _conf.LoginUrl });
-    await page.WaitForNavigationAsync(new NavigationOptions
-    {
-        Timeout = TIMEOUT_MS,
-        WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded }
-    });
+    await cdpSession.SendAsync("Page.enable");
+    var navigateTask = cdpSession.SendAsync("Page.navigate", new { url = _conf.LoginUrl });
+    // 等待页面加载完成
+    await Task.WhenAll(navigateTask, page.WaitForSelectorAsync("body", new WaitForSelectorOptions { Timeout = TIMEOUT_MS }));
 
     bool isLogin = false;
     string cookie = "fail";
