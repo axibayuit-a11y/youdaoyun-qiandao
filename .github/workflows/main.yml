@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@main
     - name: Run
-      uses: coactions/setup-xvfb@main
+      uses: coactions/setup-xvfb@v1
       with:
         run: dotnet run
       env: 
