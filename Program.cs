@@ -125,7 +125,10 @@ async Task<string> GetCookie(User user)
     var browser = await Puppeteer.LaunchAsync(launchOptions);
     IPage page = await browser.DefaultContext.NewPageAsync();
 
-    await page.GoToAsync(_conf.LoginUrl, new NavigationOptions
+    // 使用 CDP 直接导航，避免 PuppeteerSharp 默认的 referrerPolicy 问题
+    var cdpSession = await page.Target.CreateCDPSessionAsync();
+    await cdpSession.SendAsync("Page.navigate", new { url = _conf.LoginUrl });
+    await page.WaitForNavigationAsync(new NavigationOptions
     {
         Timeout = TIMEOUT_MS,
         WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded }
